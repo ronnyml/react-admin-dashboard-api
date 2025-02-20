@@ -1,12 +1,8 @@
 import express from 'express';
-import { WorkOS } from '@workos-inc/node';
 import stockPrices from './stockPriceData.js';
-import dotenv from 'dotenv';
-dotenv.config();
+import { WORKOS_CLIENT_ID } from './index.js';
 
 const router = express.Router();
-const WORKOS_API_KEY = new WorkOS(process.env.WORKOS_API_KEY);
-const WORKOS_CLIENT_ID = new WorkOS(process.env.WORKOS_CLIENT_ID);
 
 const handleRequest = async (req, res, action) => {
   try {
@@ -50,7 +46,7 @@ router.get('/', (req, res) => {
           </li>
           <br>
           <li>
-            <strong>GET /api/stock-price</strong><br>
+            <strong>GET <a href='api/stock-price/'>api/stock-price/</a></strong><br>
             Retrieves AAPL (Apple) end-of-day stock prices for the past 12 months.<br><br>
             <strong>Example Response:</strong><br>
             <pre>
