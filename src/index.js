@@ -20,3 +20,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 export { WORKOS_API_KEY, WORKOS_CLIENT_ID, workos };
+export default app;
