@@ -1,6 +1,5 @@
 import express from 'express';
 import stockPrices from './stockPriceData.js';
-import { WORKOS_CLIENT_ID } from './index.js';
 
 const router = express.Router();
 
@@ -31,14 +30,14 @@ router.get('/', (req, res) => {
                 "email": "user@example.com",
                 "password": "password123"
               }
-                          </pre>
-                        </li>
-                        <br>
-                        <li>
-                          <strong>POST /api/sign-out</strong><br>
-                          Logs out a user using sessionId.<br><br>
-                          <strong>Requires JSON body:</strong><br>
-                          <pre>
+            </pre>
+          </li>
+          <br>
+          <li>
+            <strong>POST /api/sign-out</strong><br>
+            Logs out a user using sessionId.<br><br>
+            <strong>Requires JSON body:</strong><br>
+            <pre>
               {
                 "sessionId": "session-id"
               }
@@ -46,7 +45,7 @@ router.get('/', (req, res) => {
           </li>
           <br>
           <li>
-            <strong>GET <a href='api/stock-price/'>api/stock-price/</a></strong><br>
+            <strong>GET <a href='/api/stock-price/'>api/stock-price/</a></strong><br>
             Retrieves AAPL (Apple) end-of-day stock prices for the past 12 months.<br><br>
             <strong>Example Response:</strong><br>
             <pre>
@@ -54,7 +53,7 @@ router.get('/', (req, res) => {
                 "stock": "AAPL",
                 "prices": [
                   {
-                    "date": "2025-01-01",
+                    "date": "Jan 2025",
                     "open": 165.20,
                     "high": 170.50,
                     "low": 164.30,
@@ -71,33 +70,39 @@ router.get('/', (req, res) => {
   `);
 });
 
-router.post('/api/sign-in', (req, res) => {
-  handleRequest(req, res, async ({ email, password }) => {
-    const user = await workos.userManagement.authenticateWithPassword({
-      email,
-      password,
-      clientId: WORKOS_CLIENT_ID,
+const authRoutes = (router, workos, WORKOS_CLIENT_ID) => {
+  router.post('/api/sign-in', (req, res) => {
+    handleRequest(req, res, async ({ email, password }) => {
+      const user = await workos.userManagement.authenticateWithPassword({
+        email,
+        password,
+        clientId: WORKOS_CLIENT_ID,
+      });
+      return { user };
     });
-    return { user };
   });
-});
 
-
-router.post('/api/sign-out', (req, res) => {
-  handleRequest(req, res, async ({ sessionId }) => {
-    await workos.userManagement.getLogoutUrl({ sessionId, returnTo: '/' });
-    return { message: 'User signed out successfully' };
+  router.post('/api/sign-out', (req, res) => {
+    handleRequest(req, res, async ({ sessionId }) => {
+      await workos.userManagement.getLogoutUrl({ sessionId, returnTo: '/' });
+      return { message: 'User signed out successfully' };
+    });
   });
-});
+};
 
-
-router.get('/api/stock-price', (req, res) => {
-  handleRequest(req, res, async () => {
-    if (!stockPrices || !stockPrices.prices || stockPrices.prices.length === 0) {
-      throw new Error("Stock Price data is unavailable.");
-    }
-    return stockPrices;
+const stockRoutes = (router) => {
+  router.get('/api/stock-price', (req, res) => {
+    handleRequest(req, res, async () => {
+      if (!stockPrices?.prices?.length) {
+        throw new Error("Stock Price data is unavailable.");
+      }
+      return stockPrices;
+    });
   });
-});
+};
 
-export default router;
+export default (workos, WORKOS_CLIENT_ID) => {
+  authRoutes(router, workos, WORKOS_CLIENT_ID);
+  stockRoutes(router);
+  return router;
+};
