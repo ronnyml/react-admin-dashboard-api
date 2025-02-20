@@ -2,6 +2,7 @@ import express from 'express';
 import { WorkOS } from '@workos-inc/node';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import stockPrices from './stockPriceData.js';
 
 dotenv.config();
 
@@ -33,14 +34,44 @@ app.get('/', (req, res) => {
             <strong>POST /api/sign-in</strong><br>
             Authenticates a user with email and password.<br><br>
             <strong>Requires JSON body:</strong><br>
-            { "email": "user@example.com", "password": "password123" }
+            <pre>
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+            </pre>
           </li>
           <br>
           <li>
             <strong>POST /api/sign-out</strong><br>
             Logs out a user using sessionId.<br><br>
             <strong>Requires JSON body:</strong><br>
-            { "sessionId": "session-id" }
+            <pre>
+{
+  "sessionId": "session-id"
+}
+            </pre>
+          </li>
+          <br>
+          <li>
+            <strong>GET /api/stock-price</strong><br>
+            Retrieves AAPL (Apple) end-of-day stock prices for the past 12 months.<br><br>
+            <strong>Example Response:</strong><br>
+            <pre>
+{
+  "stock": "AAPL",
+  "prices": [
+    {
+      "date": "2025-01-01",
+      "open": 165.20,
+      "high": 170.50,
+      "low": 164.30,
+      "close": 168.90,
+      "volume": 12500000
+    }
+  ]
+}
+            </pre>
           </li>
         </ul>
       </body>
@@ -63,6 +94,15 @@ app.post('/api/sign-out', (req, res) => {
   handleRequest(req, res, async ({ sessionId }) => {
     await workos.userManagement.getLogoutUrl({ sessionId, returnTo: '/' });
     return { message: 'User signed out successfully' };
+  });
+});
+
+app.get('/api/stock-price', (req, res) => {
+  handleRequest(req, res, async () => {
+    if (!stockPrices || !stockPrices.prices || stockPrices.prices.length === 0) {
+      throw new Error("Stock Price data is unavailable.");
+    }
+    return stockPrices;
   });
 });
 
